@@ -1,49 +1,67 @@
 package com.example.android.data;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import android.graphics.drawable.Drawable;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.data.model.DataItem;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
-/**
- * Created by Brandon on 6/15/2017.
- */
+public class DataItemAdapter extends RecyclerView.Adapter<DataItemAdapter.ViewHolder> {
 
+    private List<DataItem> mItems;
+    private Context mContext;
 
-
-public class DataItemAdapter extends ArrayAdapter<DataItem> {
-    List<DataItem> mDataItems;
-    LayoutInflater mInflator;
-
-    public DataItemAdapter(Context context,  List<DataItem> objects) {
-        super(context, R.layout.list_item, objects);
-        mInflator = LayoutInflater.from(context);
-        mDataItems = objects;
+    public DataItemAdapter(Context context, List<DataItem> items) {
+        this.mContext = context;
+        this.mItems = items;
     }
 
-    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = mInflator.inflate(R.layout.list_item, parent, false);
+    public DataItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View itemView = inflater.inflate(R.layout.list_item, parent, false);
+        ViewHolder viewHolder = new ViewHolder(itemView);
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(DataItemAdapter.ViewHolder holder, int position) {
+        DataItem item = mItems.get(position);
+
+        try {
+            holder.tvName.setText(item.getItemName());
+            String imageFile = item.getImage();
+            InputStream inputStream = mContext.getAssets().open(imageFile);
+            Drawable d = Drawable.createFromStream(inputStream, null);
+            holder.imageView.setImageDrawable(d);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        TextView tvName = (TextView) convertView.findViewById(R.id.itemNameText);
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
+    @Override
+    public int getItemCount() {
+        return mItems.size();
+    }
 
-        DataItem item = mDataItems.get(position);
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        tvName.setText(item.getItemName());
-        imageView.setImageResource(R.drawable.apple_pie);
+        public TextView tvName;
+        public ImageView imageView;
+        public ViewHolder(View itemView) {
+            super(itemView);
 
-        return convertView;
+            tvName = (TextView) itemView.findViewById(R.id.itemNameText);
+            imageView = (ImageView) itemView.findViewById(R.id.imageView);
+        }
     }
 }
